@@ -1,0 +1,28 @@
+import drinkz.db
+
+drinkz.db.add_bottle_type('Johnnie Walker', 'Black Label', 'blended scotch')
+drinkz.db.add_to_inventory('Johnnie Walker', 'Black Label', '1000 ml')
+drinkz.db.add_to_inventory('Johnnie Walker', 'Black Label', '325 oz')
+drinkz.db.add_to_inventory('Johnnie Walker', 'Black Label', '750 ml')
+
+drinkz.db.add_bottle_type('Jack Daniels', 'Tennessee No. 7', 'blended whiskey')
+drinkz.db.add_to_inventory('Jack Daniels', 'Tennessee No. 7', '750 ml')
+drinkz.db.add_to_inventory('Jack Daniels', 'Tennessee No. 7', '59.2 oz')
+drinkz.db.add_to_inventory('Jack Daniels', 'Tennessee No. 7', '375 ml')
+
+drinkz.db.add_bottle_type('Captain Morgan', 'Original Blend', 'blended whiskey')
+drinkz.db.add_to_inventory('Captain Morgan', 'Original Blend', '750 ml')
+drinkz.db.add_to_inventory('Captain Morgan', 'Original Blend', '1.7 oz')
+drinkz.db.add_to_inventory('Captain Morgan', 'Original Blend', '200 ml')
+
+
+print 'Manufacturer\tLiquor\t\tAmount'
+print '------------\t------\t\t------'
+liquors = []
+for mfg, liquor in drinkz.db.get_liquor_inventory():
+    liquor_string = mfg + liquor
+    if any(liquor_string in lstring for lstring in liquors):
+        continue
+    liquors.append(liquor_string)
+    total = drinkz.db.get_liquor_amount(mfg, liquor)
+    print '%s\t%s\t%s' % (mfg, liquor, total)
