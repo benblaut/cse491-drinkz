@@ -10,7 +10,7 @@ Module to load in bulk data from text files.
 
 import csv                              # Python csv package
 
-from . import db                        # import from local package
+import db                        # import from local package
 
 def load_bottle_types(fp):
     """
@@ -22,17 +22,12 @@ def load_bottle_types(fp):
 
     Returns number of bottle types loaded
     """
-    reader = csv.reader(fp)
-
-    x = []
+    new_reader = data_reader(fp)
+    
     n = 0
-    for line in reader:
-        if line[0].startswith('#'):
-            continue
-        
-        (mfg, name, typ) = line
-        n += 1
-        db.add_bottle_type(mfg, name, typ)
+    for (mfg, name, typ) in new_reader:       
+       n += 1
+       db.add_bottle_type(mfg, name, typ)
 
     return n
 
@@ -49,12 +44,26 @@ def load_inventory(fp):
     Note that a LiquorMissing exception is raised if bottle_types_db does
     not contain the manufacturer and liquor name already.
     """
+    new_reader = data_reader(fp)
+
+    n = 0
+    for (mfg, name, amount) in new_reader:
+       n += 1
+       db.add_to_inventory(mfg, name, amount)
+
+    return n
+    
+def data_reader(fp):
     reader = csv.reader(fp)
 
     x = []
-    n = 0
-    for (mfg, name, amount) in reader:
-        n += 1
-        db.add_to_inventory(mfg, name, amount)
-
-    return n
+    for line in reader:
+       if line:
+         if line[0].startswith('#'):
+           continue
+       if not any(field.strip() for field in line):
+         continue
+       
+       x.append(line)
+       
+    return x

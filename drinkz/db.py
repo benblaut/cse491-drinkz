@@ -49,9 +49,21 @@ def get_liquor_amount(mfg, liquor):
     amounts = []
     for (m, l, amount) in _inventory_db:
         if mfg == m and liquor == l:
-            amounts.append(amount)
+            amount_split = amount.split()
+            float_amount = float(amount_split[0])
+            
+            if amount_split[1] == "ml":
+                amounts.append(float_amount)
+            elif amount_split[1] == "oz":
+                float_amount *= 29.5735
+                amounts.append(float_amount)
+            else:
+                print "\nIncorrect unit of measurement for \'%s %s %s\', use ml or oz." % (m, l, amount)
 
-    return amounts[0]
+            total = sum(amounts)
+            total_amount = str(total) + " ml"
+
+    return total_amount
 
 def get_liquor_inventory():
     "Retrieve all liquor types in inventory, in tuple form: (mfg, liquor)."
