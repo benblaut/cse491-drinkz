@@ -5,6 +5,7 @@ from cStringIO import StringIO
 import imp
 
 import db, load_bulk_data
+import recipes
 
 def start_load_bottle_types(path, print_output):
     db._reset_db()
@@ -70,7 +71,7 @@ def test_get_liquor_amount_2():
     db.add_bottle_type('Johnnie Walker', 'Black Label', 'blended scotch')
     db.add_to_inventory('Johnnie Walker', 'Black Label', '1000 ml')
     db.add_to_inventory('Johnnie Walker', 'Black Label', '325 oz')
-    db.add_to_inventory('Johnnie Walker', 'Black Label', '250 ml')
+    db.add_to_inventory('Johnnie Walker', 'Black Label', '1 g')
     amount = db.get_liquor_amount('Johnnie Walker', 'Black Label')
 
     print "\n%s" % amount
@@ -98,6 +99,30 @@ def test_script_load_inventory():
     scriptpath = 'bin/load-liquor-inventory'
     module = imp.load_source('lli', scriptpath)
     exit_code = module.main([scriptpath, 'test-data/inventory-data-1.txt'])
+    
+def test_create_recipe():
+    r = recipes.Recipe('vodka martini', [('vodka', '6 oz'), ('vermouth', '1 oz')])
+    print r.name, r.ingredients
+    
+def test_add_recipe():
+    r = recipes.Recipe('vodka martini', [('vodka', '6 oz'), ('vermouth', '1 oz')])
+    db.add_recipe(r)
+    print db._recipe_db['vodka martini']
+    
+def test_get_recipe():
+    r = recipes.Recipe('vodka martini', [('vodka', '6 oz'), ('vermouth', '1 oz')])
+    db.add_recipe(r)
+    x = db.get_recipe('vodka martini')
+    
+    if(x):
+        print x.name, x.ingredients
+    
+test_create_recipe()
+print ""
+test_add_recipe()
+print ""
+test_get_recipe()
+print ""
 
 
 test_load_bottle_types_1()

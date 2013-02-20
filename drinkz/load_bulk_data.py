@@ -26,8 +26,10 @@ def load_bottle_types(fp):
     
     n = 0
     for (mfg, name, typ) in new_reader:       
-       n += 1
-       db.add_bottle_type(mfg, name, typ)
+        n += 1
+        db.add_bottle_type(mfg, name, typ)
+       
+    set(db._bottle_types_db)
 
     return n
 
@@ -48,8 +50,8 @@ def load_inventory(fp):
 
     n = 0
     for (mfg, name, amount) in new_reader:
-       n += 1
-       db.add_to_inventory(mfg, name, amount)
+        n += 1
+        db.add_to_inventory(mfg, name, amount)
 
     return n
     
