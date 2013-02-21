@@ -102,26 +102,61 @@ def test_script_load_inventory():
     
 def test_create_recipe():
     r = recipes.Recipe('vodka martini', [('vodka', '6 oz'), ('vermouth', '1 oz')])
+
+    assert r.name == 'vodka martini'
+    assert r.ingredients == [('vodka', '6 oz'), ('vermouth', '1 oz')]
     print r.name, r.ingredients
     
 def test_add_recipe():
+    db._reset_db()
     r = recipes.Recipe('vodka martini', [('vodka', '6 oz'), ('vermouth', '1 oz')])
     db.add_recipe(r)
-    print db._recipe_db['vodka martini']
+
+    assert len(db._recipe_db) == 1
+    print db._recipe_db
     
 def test_get_recipe():
+    db._reset_db()
     r = recipes.Recipe('vodka martini', [('vodka', '6 oz'), ('vermouth', '1 oz')])
     db.add_recipe(r)
     x = db.get_recipe('vodka martini')
     
+    assert r == x
     if(x):
         print x.name, x.ingredients
+
+def test_get_all_recipes():
+    db._reset_db()
+    r = recipes.Recipe('vodka martini', [('vodka', '6 oz'), ('vermouth', '1 oz')])
+    db.add_recipe(r)
+    r2 = recipes.Recipe('screwdriver', [('orange juice', '6 oz'), ('vodka', '1 oz')])
+    db.add_recipe(r2)
+    x = db.get_all_recipes()
+
+    assert len(x) == 2
+    for rec in x:
+        print rec.name, rec.ingredients
+
+def test_convert_to_ml():
+    data = ["1 ml", "1 milliliter", "2 milliliters", "2 l", "1 l", "10 l", "10 oz", "1 ounce", "15 ounces", "2 g", "1 gallon", "5 gallons"]
+    converted_data = []
+
+    for entry in data:
+        converted = db.convert_to_ml(entry)
+        converted_data.append(converted)
+
+    assert converted_data == [1.0, 1.0, 2.0, 2000.0, 1000.0, 10000.0, 295.735, 29.5735, 443.60249999999996, 7570.82, 3785.41, 18927.05]
+    print converted_data
     
 test_create_recipe()
 print ""
 test_add_recipe()
 print ""
 test_get_recipe()
+print ""
+test_get_all_recipes()
+print ""
+test_convert_to_ml()
 print ""
 
 
