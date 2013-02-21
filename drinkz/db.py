@@ -47,6 +47,12 @@ def add_to_inventory(mfg, liquor, amount):
     if not check_inventory(mfg, liquor):
         # just add it to the inventory database as a tuple, for now.
         _inventory_db[(mfg, liquor)] = amount
+    else:
+        amount_to_add = convert_to_ml(amount)
+        old_amount = get_liquor_amount(mfg, liquor)
+        new_amount = amount_to_add + old_amount
+        amount_str = str(new_amount) + " ml"
+        _inventory_db[(mfg, liquor)] = amount_str
 
 def check_inventory(mfg, liquor):
     for ((m, l), _) in _inventory_db.iteritems():
