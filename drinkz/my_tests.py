@@ -4,7 +4,7 @@ sys.path.insert(0, 'bin/')
 from cStringIO import StringIO
 import imp
 
-import db, load_bulk_data
+import db, load_bulk_data, convert
 import recipes
 
 def start_load_bottle_types(path, print_output):
@@ -142,7 +142,7 @@ def test_convert_to_ml():
     converted_data = []
 
     for entry in data:
-        converted = db.convert_to_ml(entry)
+        converted = convert.convert_to_ml(entry)
         converted_data.append(converted)
 
     assert converted_data == [1.0, 1.0, 2.0, 2000.0, 1000.0, 10000.0, 295.735, 29.5735, 443.60249999999996, 7570.82, 3785.41, 18927.05]

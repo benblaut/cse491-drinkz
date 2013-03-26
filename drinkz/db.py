@@ -9,6 +9,7 @@ quickly.
 """
 
 import recipes
+import convert
 
 # private singleton variables at module level
 _bottle_types_db = set([])
@@ -48,7 +49,7 @@ def add_to_inventory(mfg, liquor, amount):
         # just add it to the inventory database as a tuple, for now.
         _inventory_db[(mfg, liquor)] = amount
     else:
-        amount_to_add = convert_to_ml(amount)
+        amount_to_add = convert.convert_to_ml(amount)
         old_amount = get_liquor_amount(mfg, liquor)
         new_amount = amount_to_add + old_amount
         amount_str = str(new_amount) + " ml"
@@ -76,7 +77,7 @@ def get_liquor_amount(mfg, liquor):
     for ((m, l), amount) in _inventory_db.iteritems():
         if mfg == m and liquor == l:
             found = True
-            ml_amount = convert_to_ml(amount)           
+            ml_amount = convert.convert_to_ml(amount)           
             amounts.append(ml_amount)
             total = sum(amounts)
             
@@ -85,25 +86,6 @@ def get_liquor_amount(mfg, liquor):
     if not found:
         err = "Missing liquor: manufacturer '%s', name '%s'" % (mfg, liquor)
         raise LiquorMissing(err)
-
-def convert_to_ml(amount):
-    "Take a string of form (# unit), convert the # to ml and change unit to ml"
-    amount_split = amount.split()
-    float_amount = float(amount_split[0])
-            
-    if amount_split[1] == "ml" or amount_split[1] == "milliliter" or amount_split[1] == "milliliters":
-        return float_amount
-    elif amount_split[1] == "l" or amount_split[1] == "liter" or amount_split[1] == "liters":
-        float_amount *= 1000
-        return float_amount
-    elif amount_split[1] == "oz" or amount_split[1] == "ounce" or amount_split[1] == "ounces":
-        float_amount *= 29.5735
-        return float_amount
-    elif amount_split[1] == "gallons" or amount_split[1] == "gallon" or amount_split[1] == "g":
-        float_amount *= 3785.41
-        return float_amount
-    else:
-        print "\nIncorrect unit of measurement, use ml, g, or oz."
 
 def get_liquor_inventory():
     "Retrieve all liquor types in inventory, in tuple form: (mfg, liquor)."
