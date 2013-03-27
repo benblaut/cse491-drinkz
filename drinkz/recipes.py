@@ -1,4 +1,4 @@
-import db
+import db, convert
 
 class Recipe(object):
     def __init__(self, name = '', ingredients = [()]):
@@ -9,7 +9,7 @@ class Recipe(object):
         types_needed = []
         ingredients_needed = []
         for (typ, amt) in self.ingredients:
-            amt = db.convert_to_ml(amt)
+            amt = convert.convert_to_ml(amt)
             brands_owned = db.check_inventory_for_type(typ)
             if len(brands_owned) == 0:
                 types_needed.append((typ, amt))

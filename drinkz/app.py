@@ -1,13 +1,14 @@
 #! /usr/bin/env python
+import db, recipes, convert
 from wsgiref.simple_server import make_server
 import urlparse
 import simplejson
 
 dispatch = {
     '/' : 'index',
-    '/content' : 'somefile',
-    '/error' : 'error',
-    '/helmet' : 'helmet',
+    '/recipes' : 'recipes',
+    '/inventory' : 'inventory',
+    '/liquor_types' : 'liquor_types',
     '/form' : 'form',
     '/recv' : 'recv',
     '/rpc'  : 'dispatch_rpc'
@@ -34,21 +35,18 @@ class SimpleApp(object):
             
     def index(self, environ, start_response):
         data = """\
-Visit:
-<a href='content'>a file</a>,
-<a href='error'>an error</a>,
-<a href='helmet'>an image</a>,
-<a href='somethingelse'>something else</a>, or
-<a href='form'>a form...</a>
+<a href='recipes'>Recipes</a>,
+<a href='inventory'>Inventory</a>,
+<a href='liquor_types'>Liquor Types</a>,
+<a href='form'>Convert</a>
 <p>
-<img src='/helmet'>
 """
         start_response('200 OK', list(html_headers))
         return [data]
         
-    def somefile(self, environ, start_response):
+    def recipes(self, environ, start_response):
         content_type = 'text/html'
-        data = open('somefile.html').read()
+        data = recipes()
 
         start_response('200 OK', list(html_headers))
         return [data]
@@ -61,13 +59,20 @@ Visit:
         start_response('200 OK', list(html_headers))
         return [data]
 
-    def helmet(self, environ, start_response):
-        content_type = 'image/gif'
-        data = open('Spartan-helmet-Black-150-pxls.gif', 'rb').read()
+    def inventory(self, environ, start_response):
+        content_type = 'text/html'
+        data = inventory()
 
-        start_response('200 OK', [('Content-type', content_type)])
+        start_response('200 OK', list(html_headers))
         return [data]
 
+    def liquor_types(self, environ, start_response):
+        content_type = 'text/html'
+        data = liquor_types()
+
+        start_response('200 OK', list(html_headers))
+        return [data]
+        
     def form(self, environ, start_response):
         data = form()
 
@@ -78,11 +83,11 @@ Visit:
         formdata = environ['QUERY_STRING']
         results = urlparse.parse_qs(formdata)
 
-        firstname = results['firstname'][0]
-        lastname = results['lastname'][0]
+        amount_to_convert = results['amount_to_convert'][0]
+        amount_to_convert = convert.convert_to_ml(amount_to_convert)
 
         content_type = 'text/html'
-        data = "First name: %s; last name: %s.  <a href='./'>return to index</a>" % (firstname, lastname)
+        data = "Given amount converted to milliliters: %f. <a href='./'>Return to index.</a>" % amount_to_convert
 
         start_response('200 OK', list(html_headers))
         return [data]
@@ -132,13 +137,45 @@ Visit:
 
     def rpc_add(self, a, b):
         return int(a) + int(b)
+        
+def recipes():
+    data = "<p><table><td><b><u>Recipe</u><b/></td><td><b><u>Have ingredients?</u></b></td><tr><td>"
+    for recipe in db._recipe_db:
+        need_ingredients = False
+        have_ingredients_str = ""
+        if recipe.need_ingredients():
+            need_ingredients = True
+
+        if need_ingredients:
+            have_ingredients_str = "No"
+        else:
+            have_ingredients_str = "Yes"
+               
+        data += "<tr><td>" + recipe.name + "</td><td>" + have_ingredients_str + "</td></tr>"
+        
+    data += "</table><p><a href='./'>Index</a> <a href='inventory'>Inventory</a> <a href='liquor_types'>Liquor Types</a> <a href='form'>Convert</a>"
+    return data
+    
+def inventory():
+    data = "<p><ul>"
+    for ((m, l), a) in db._inventory_db.iteritems():
+        amt = db.get_liquor_amount(m, l)
+        data += "<li> " + m + l + str(amt)
+    data += "</ul><p><a href='./'>Index</a> <a href='recipes'>Recipes</a> <a href='liquor_types'>Liquor Types</a> <a href='form'>Convert</a>"
+    return data
+    
+def liquor_types():
+    data = "<p><ul>"
+    for (m, l, t) in db._bottle_types_db:
+        data += "<li> " + m + l + t
+    data += "</ul><p><a href='./'>Index</a> <a href='recipes'>Recipes</a> <a href='inventory'>Inventory</a> <a href='form'>Convert</a>"
+    return data
     
 def form():
     return """
 <form action='recv'>
-Your first name? <input type='text' name='firstname' size'20'>
-Your last name? <input type='text' name='lastname' size='20'>
-<input type='submit'>
+Enter amount to convert to milliliters in liters or gallons: <input type='text' name='amount_to_convert' size'20'>
+<input type='submit'> <a href='./'>Return to index.</a>
 </form>
 """
 
