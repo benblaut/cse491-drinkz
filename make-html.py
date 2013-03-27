@@ -7,6 +7,7 @@ except OSError:
     # already exists
     pass
 
+"""
 db._reset_db()
 
 db.add_bottle_type('Johnnie Walker', 'black label', 'blended scotch')
@@ -35,6 +36,9 @@ bad_martini = recipes.Recipe('vomit inducing martini', [('orange juice',
                                                      ('vermouth',
                                                       '1.5 oz')])
 db.add_recipe(bad_martini)
+"""
+
+db.load_db("test_database")
 
 ###
 fp = open('html/index.html', 'w')

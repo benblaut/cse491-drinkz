@@ -1,8 +1,12 @@
 #! /usr/bin/env python
 import db, recipes, convert
-from wsgiref.simple_server import make_server
 import urlparse
 import simplejson
+import sys,os.path
+
+from wsgiref.simple_server import make_server
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 dispatch = {
     '/' : 'index',
@@ -15,6 +19,8 @@ dispatch = {
 }
 
 html_headers = [('Content-type', 'text/html')]
+
+db.load_db("test_database")
 
 class SimpleApp(object):
     def __call__(self, environ, start_response):
@@ -144,6 +150,7 @@ def recipes():
         need_ingredients = False
         have_ingredients_str = ""
         if recipe.need_ingredients():
+            wtf = recipe.need_ingredients()
             need_ingredients = True
 
         if need_ingredients:
@@ -151,7 +158,7 @@ def recipes():
         else:
             have_ingredients_str = "Yes"
                
-        data += "<tr><td>" + recipe.name + "</td><td>" + have_ingredients_str + "</td></tr>"
+        data += "<tr><td>" + recipe.name + "</td><td>" + str(wtf).strip('[]') + "</td></tr>"
         
     data += "</table><p><a href='./'>Index</a> <a href='inventory'>Inventory</a> <a href='liquor_types'>Liquor Types</a> <a href='form'>Convert</a>"
     return data
@@ -160,14 +167,14 @@ def inventory():
     data = "<p><ul>"
     for ((m, l), a) in db._inventory_db.iteritems():
         amt = db.get_liquor_amount(m, l)
-        data += "<li> " + m + l + str(amt)
+        data += "<li> " + m + " " + l + " " + str(amt)
     data += "</ul><p><a href='./'>Index</a> <a href='recipes'>Recipes</a> <a href='liquor_types'>Liquor Types</a> <a href='form'>Convert</a>"
     return data
     
 def liquor_types():
     data = "<p><ul>"
     for (m, l, t) in db._bottle_types_db:
-        data += "<li> " + m + l + t
+        data += "<li> " + m + " "  + l + " "  + t
     data += "</ul><p><a href='./'>Index</a> <a href='recipes'>Recipes</a> <a href='inventory'>Inventory</a> <a href='form'>Convert</a>"
     return data
     

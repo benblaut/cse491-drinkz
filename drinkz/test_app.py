@@ -57,7 +57,7 @@ class SimpleApp(object):
         return fn(environ, start_response)
         
     def index(self, environ, start_response):
-        data = """
+        data = """Index Listing<br>z
 <a href='recipes'>Recipes</a>,
 <a href='inventory'>Inventory</a>,
 <a href='liquor_types'>Liquor Types</a>,
