@@ -1,5 +1,11 @@
 #! /usr/bin/env python
-import db, recipes
+import recipes, app
+import sys, os.path
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from drinkz import db
+from recipes import Recipe
 from wsgiref.simple_server import make_server
 
 dispatch = {
@@ -14,30 +20,31 @@ dispatch = {
 
 html_headers = [('Content-type', 'text/html')]
 
-db._reset_db()
+def make_test_db():
+    db._reset_db()
 
-db.add_bottle_type('Kraken', 'dark spiced rum', 'dark spiced rum')
-db.add_to_inventory('Kraken', 'dark spiced rum', '750 ml')
+    db.add_bottle_type('Kraken', 'dark spiced rum', 'dark spiced rum')
+    db.add_to_inventory('Kraken', 'dark spiced rum', '750 ml')
 
-db.add_bottle_type('Bols', 'blue curacao', 'citrus liqeur')
-db.add_to_inventory('Bols', 'blue curacao', '500 ml')
+    db.add_bottle_type('Bols', 'blue curacao', 'citrus liqeur')
+    db.add_to_inventory('Bols', 'blue curacao', '500 ml')
         
-db.add_bottle_type('Hypnotiq', 'original', 'berry liqeur')
-db.add_to_inventory('Hypnotiq', 'original', '750 ml')
+    db.add_bottle_type('Hypnotiq', 'original', 'berry liqeur')
+    db.add_to_inventory('Hypnotiq', 'original', '750 ml')
 
-db.add_bottle_type('Uncle John\'s', 'original cider', 'apple cider')
-db.add_to_inventory('Uncle John\'s', 'original cider', '1 g')
+    db.add_bottle_type('Uncle John\'s', 'original cider', 'apple cider')
+    db.add_to_inventory('Uncle John\'s', 'original cider', '1 g')
 
-kraken_destroyer = recipes.Recipe('kraken destroyer', [('dark spiced rum',
+    kraken_destroyer = Recipe('kraken destroyer', [('dark spiced rum',
                                                    '4.5 oz'), ('citrus liqeur', 
                                                    '1 oz'), ('berry liqeur', 
                                                    '1 oz'), ('apple cider', 
                                                    '8 oz')])
-db.add_recipe(kraken_destroyer)
+    db.add_recipe(kraken_destroyer)
 
-kraken_and_cola = recipes.Recipe('kraken and cola', [('dark spiced rum', '6 oz'),
+    kraken_and_cola = Recipe('kraken and cola', [('dark spiced rum', '6 oz'),
                                             ('cola', '8 oz')])
-db.add_recipe(kraken_and_cola)
+    db.add_recipe(kraken_and_cola)
 
 class SimpleApp(object):
     def __call__(self, environ, start_response):
@@ -93,6 +100,8 @@ def recipes():
     return data
 
 def test_recipes():
+    make_test_db()
+
     environ = {}
     environ['PATH_INFO'] = '/recipes'
     

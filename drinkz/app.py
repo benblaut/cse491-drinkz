@@ -1,12 +1,14 @@
 #! /usr/bin/env python
-import db, recipes, convert
+import recipes, convert
 import urlparse
 import simplejson
-import sys,os.path
+import sys, os.path
 
 from wsgiref.simple_server import make_server
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from drinkz import db
 
 dispatch = {
     '/' : 'index',
@@ -40,12 +42,29 @@ class SimpleApp(object):
         return fn(environ, start_response)
             
     def index(self, environ, start_response):
-        data = """\
-<a href='recipes'>Recipes</a>,
-<a href='inventory'>Inventory</a>,
-<a href='liquor_types'>Liquor Types</a>,
-<a href='form'>Convert</a>
-<p>
+        data = """<html><head><title>Drinkz Index</title>
+                  <style type='text/css'>
+                    h1 {color:red;}
+                    body {font-size: 14px;}
+                  </style>
+                  <script>
+                    function alertFunction()
+                    {
+                      alert("No I'm not!");
+                    }
+                  </script>
+                  </head>
+                  <body>
+                    <h1>Index</h1>
+                    <input type="button" onclick="alertFunction()" value="I'm drunk!" />
+                    <br><br>
+                    <a href='recipes'>Recipes</a>,
+                    <a href='inventory'>Inventory</a>,
+                    <a href='liquor_types'>Liquor Types</a>,
+                    <a href='form'>Convert</a>
+                    <p>
+                  </body>
+                  </html>
 """
         start_response('200 OK', list(html_headers))
         return [data]
@@ -88,12 +107,14 @@ class SimpleApp(object):
     def recv(self, environ, start_response):
         formdata = environ['QUERY_STRING']
         results = urlparse.parse_qs(formdata)
+        content_type = 'text/html'
 
         amount_to_convert = results['amount_to_convert'][0]
-        amount_to_convert = convert.convert_to_ml(amount_to_convert)
-
-        content_type = 'text/html'
-        data = "Given amount converted to milliliters: %f. <a href='./'>Return to index.</a>" % amount_to_convert
+        try:
+            amount_to_convert = convert.convert_to_ml(amount_to_convert)
+            data = "Given amount converted to milliliters: %f. <a href='./'>Return to index.</a>" % amount_to_convert
+        except TypeError:
+            data = "Incorrect units, please <a href='form'>try again</a>." 
 
         start_response('200 OK', list(html_headers))
         return [data]
@@ -143,9 +164,39 @@ class SimpleApp(object):
 
     def rpc_add(self, a, b):
         return int(a) + int(b)
+
+    def rpc_convert_units_to_ml(self, amount):
+        return convert.convert_to_ml(amount)
+
+    def rpc_get_recipe_names(self):
+        all_recipes = db.get_all_recipes()
+        recipe_names = []
+        for rec in all_recipes:
+            recipe_names.append(rec.name)
+
+        return recipe_names
+
+    def rpc_get_liquor_inventory(self):
+        inventory = []
+        pairing = ()
+        for (mfg, liquor) in db.get_liquor_inventory():
+            pairing = (mfg, liquor)
+            inventory.append(pairing)
+        return inventory
         
 def recipes():
-    data = "<p><table><td><b><u>Recipe</u><b/></td><td><b><u>Have ingredients?</u></b></td><tr><td>"
+    data = """<html><head><title>Recipes</title>
+              <style type='text/css'>
+                h1 {color:red;}
+                body {font-size: 14px;}
+              </style>
+              </head>
+              <body>
+                <h1>Recipes</h1>
+                <p><table>
+                  <td><b><u>Recipe</u><b/></td>
+                  <td><b><u>Have ingredients?</u></b></td>
+                <tr><td>"""
     for recipe in db._recipe_db:
         need_ingredients = False
         have_ingredients_str = ""
@@ -157,33 +208,77 @@ def recipes():
             have_ingredients_str = "No"
         else:
             have_ingredients_str = "Yes"
-               
-        data += "<tr><td>" + recipe.name + "</td><td>" + str(wtf).strip('[]') + "</td></tr>"
+
+        data += "<tr><td>" + recipe.name + "</td><td>" + have_ingredients_str + "</td></tr>"
         
-    data += "</table><p><a href='./'>Index</a> <a href='inventory'>Inventory</a> <a href='liquor_types'>Liquor Types</a> <a href='form'>Convert</a>"
+    data += """</table><p>
+               <a href='./'>Index</a> 
+               <a href='inventory'>Inventory</a> 
+               <a href='liquor_types'>Liquor Types</a> 
+               <a href='form'>Convert</a>
+               </body>
+               </html>"""
     return data
     
 def inventory():
-    data = "<p><ul>"
+    data = """<html><head><title>Inventory</title>
+              <style type='text/css'>
+                h1 {color:red;}
+                body {font-size: 14px;}
+              </style>
+              </head>
+              <body>
+                <h1>Inventory</h1>
+                <p><ul>"""
     for ((m, l), a) in db._inventory_db.iteritems():
         amt = db.get_liquor_amount(m, l)
         data += "<li> " + m + " " + l + " " + str(amt)
-    data += "</ul><p><a href='./'>Index</a> <a href='recipes'>Recipes</a> <a href='liquor_types'>Liquor Types</a> <a href='form'>Convert</a>"
+    data += """</ul><p>
+               <a href='./'>Index</a> 
+               <a href='recipes'>Recipes</a> 
+               <a href='liquor_types'>Liquor Types</a> 
+               <a href='form'>Convert</a>
+               </body>
+               </html>"""
     return data
     
 def liquor_types():
-    data = "<p><ul>"
+    data = """<html><head><title>Liquor Types</title>
+              <style type='text/css'>
+                h1 {color:red;}
+                body {font-size: 14px;}
+              </style>
+              </head>
+              <body>
+                <h1>Liquor Types</h1>
+                <p><ul>"""
     for (m, l, t) in db._bottle_types_db:
         data += "<li> " + m + " "  + l + " "  + t
-    data += "</ul><p><a href='./'>Index</a> <a href='recipes'>Recipes</a> <a href='inventory'>Inventory</a> <a href='form'>Convert</a>"
+    data += """</ul><p>
+               <a href='./'>Index</a> 
+               <a href='recipes'>Recipes</a> 
+               <a href='inventory'>Inventory</a> 
+               <a href='form'>Convert</a>
+               </body>
+               </html>"""
     return data
     
 def form():
     return """
+<html><head><title>Convert to ml</title>
+<style type='text/css'>
+  h1 {color:red;}
+  body {font-size: 14px;}
+</style>
+</head>
+<body>
+<h1>Convert to ml</h1>
 <form action='recv'>
 Enter amount to convert to milliliters in liters or gallons: <input type='text' name='amount_to_convert' size'20'>
-<input type='submit'> <a href='./'>Return to index.</a>
+<input type='submit'><br><a href='./'>Return to index.</a>
 </form>
+</body>
+</html>
 """
 
 if __name__ == '__main__':

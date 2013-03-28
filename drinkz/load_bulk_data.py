@@ -25,9 +25,13 @@ def load_bottle_types(fp):
     new_reader = data_reader(fp)
     
     n = 0
-    for (mfg, name, typ) in new_reader:       
-        n += 1
-        db.add_bottle_type(mfg, name, typ)
+    for line in new_reader:       
+        try:
+            (mfg, name, typ) = line
+            db.add_bottle_type(mfg, name, typ)
+            n += 1
+        except ValueError:
+            continue
        
     set(db._bottle_types_db)
 
