@@ -26,3 +26,12 @@ class Recipe(object):
             ingredients_needed.append((type_needed, amount_needed))
 
         return ingredients_needed
+        
+    def is_mixable(self):
+        "Check if current recipe can be mixed with given inventory."
+        mixable = False
+        
+        if not self.need_ingredients():
+            mixable = True
+            
+        return mixable

@@ -9,6 +9,7 @@ Module to load in bulk data from text files.
 #
 
 import csv                              # Python csv package
+import yaml
 
 import db                        # import from local package
 
@@ -58,6 +59,18 @@ def load_inventory(fp):
         db.add_to_inventory(mfg, name, amount)
 
     return n
+    
+def load_recipes(fp):
+    """
+    Loads in data of the form manufacturer/liquor name/amount from a CSV file.
+
+    Takes a file pointer.
+
+    Adds data to database.
+
+    Returns number of recipes loaded.
+    """
+    print yaml.safe_load(fp)
     
 def data_reader(fp):
     reader = csv.reader(fp)

@@ -121,3 +121,15 @@ class TestIngredients(object):
 
         missing = r.need_ingredients()
         assert missing == [('blended scotch', 500.0)]
+        
+    def test_is_mixable1(self):
+        r = recipes.Recipe('scotch on the rocks', [('blended scotch', '4 oz')])
+        
+        mixable = r.is_mixable()
+        assert mixable, mixable
+        
+    def test_is_mixable2(self):
+        r = recipes.Recipe('vodka gimlit', [('unflavored vodka', '4 oz'), ('lime juice', '1 oz')])
+        
+        mixable = r.is_mixable()
+        assert not mixable, mixable
