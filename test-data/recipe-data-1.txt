@@ -1,0 +1,3 @@
+#recipe data file
+Scotch on the rocks, blended scotch, 4 oz
+Rum and coke, spiced rum, 4 oz, cola, 10 oz

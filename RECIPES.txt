@@ -1,0 +1,1 @@
+To bulk load recipes, from the main directory, do "python bin/load-recipes test-data/bottle-types-data-1.txt test-data/inventory-data-2.txt test-data/recipe-data-1.txt" or with text files that are csv's of your own.

@@ -9,8 +9,8 @@ Module to load in bulk data from text files.
 #
 
 import csv                              # Python csv package
-import yaml
 
+import recipes
 import db                        # import from local package
 
 def load_bottle_types(fp):
@@ -70,7 +70,25 @@ def load_recipes(fp):
 
     Returns number of recipes loaded.
     """
-    print yaml.safe_load(fp)
+    new_reader = data_reader(fp)
+    
+    x = []
+    n = 0
+    for curr_rec in new_reader:
+        try:
+            ingredients = []
+            for i in range(1, len(curr_rec), 2):
+                try:
+                    ingredients.append((curr_rec[i], curr_rec[i+1]))
+                except IndexError:
+                    print "Check formatting"
+            r = recipes.Recipe(curr_rec[0], ingredients)
+            db.add_recipe(r)
+        except ValueError:
+            print "Check usage"
+        else:
+            n += 1
+    return n
     
 def data_reader(fp):
     reader = csv.reader(fp)

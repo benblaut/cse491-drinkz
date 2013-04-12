@@ -2,22 +2,46 @@
 import sys
 import _mypath
 
+from drinkz.load_bulk_data import load_bottle_types
+from drinkz.load_bulk_data import load_inventory
 from drinkz.load_bulk_data import load_recipes
 
 def main(args):
-   if len(args) != 2:
-      print >>sys.stderr, 'Usage: %s file_to_load.yaml'
+   if len(args) != 4:
+      print >>sys.stderr, 'Usage: %s liquor-types.csv liquor-inventory.csv recipes.csv'
       return -1
 
-   filename = args[1]
-
-   fp = open(filename, 'r')
+   typesFilename = args[1]
+   inventoryFilename = args[2]
+   recipesFilename = args[3]
+   
+    # load liquor types
+   fp = open(typesFilename)
    try:
-      n = load_recipes(fp)
+      n = load_bottle_types(fp)
    finally:
       fp.close()
 
-   print 'Loaded %d recipes.' % n
+   print 'Loaded %d bottle types.' % n
+   
+   # load inventory
+   fp = open(inventoryFilename)
+   try:
+      m = load_inventory(fp)
+   finally:
+      fp.close()
+
+   print 'Loaded %d liquors.' % m
+   
+   # load recipes
+   fp = open(recipesFilename)
+   try:
+       p = load_recipes(fp)
+   finally:
+       fp.close()
+       
+   print 'Loaded %d recipes.' % p
+   
    return 0
     
 # run the 'main()' function if this script is run from the command line;
