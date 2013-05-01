@@ -16,7 +16,7 @@ def post():
         s.connect( (hostName, port) )
         print 'connected to inferno at port 8766'
 
-        s.send("POST /posting HTTP/1.0\r\n\r\n")
+        s.send("POST /post HTTP/1.0\r\n\r\n")
 
         #directly from sockets page
         response = ""
@@ -77,7 +77,7 @@ def form():
         s.connect( (hostName, port) )
         print 'connected to inferno at port 8766'
 
-        s.send("GET /recipes_recv?name=recAddTest&ingName=testAddIng&ingAmount=123+oz HTTP/1.0\r\n\r\n")
+        s.send("GET /do_convert?amount=123+oz HTTP/1.0\r\n\r\n")
 
         response = ""
         while True:
@@ -107,7 +107,7 @@ def image():
         s.connect( (hostName, port) )
         print 'connected to inferno at port 8766'
 
-        s.send("GET /helmet HTTP/1.0\r\n\r\n")
+        s.send("GET /image HTTP/1.0\r\n\r\n")
 
         response = ""
         while True:

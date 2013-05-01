@@ -3,9 +3,11 @@ import recipes, convert
 import urlparse
 import simplejson
 import jinja2
+import uuid
 import sys, os.path
 
 from wsgiref.simple_server import make_server
+from Cookie import SimpleCookie
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -15,7 +17,14 @@ loader = jinja2.FileSystemLoader('./templates')
 env = jinja2.Environment(loader=loader)
 
 dispatch = {
-    '/' : 'index',
+    '/' : 'login',
+    '/login_start' : 'login',
+    '/login_execute' : 'login_execute',
+    '/logout' : 'logout',
+    '/status' : 'status',
+    '/index' : 'index',
+    '/post' : 'post',
+    '/image' : 'image',
     '/recipes' : 'recipes',
     '/recipes_add' : 'recipes_add',
     '/inventory' : 'inventory',
@@ -30,6 +39,8 @@ dispatch = {
 html_headers = [('Content-type', 'text/html')]
 
 db.load_db("test_database")
+
+usernames = {}
 
 class SimpleApp(object):
     def __call__(self, environ, start_response):
@@ -55,13 +66,113 @@ class SimpleApp(object):
        
         start_response('200 OK', list(html_headers))
         return [data]
+
+    def post(self, environ, start_response):
+        if environ['REQUEST_METHOD'] == 'POST':
+            data = 'Post operation successful.'
+        else:
+            data = 'Post operation unsuccessful.'
+
+        start_response('200 OK', list(html_headers))
+        return [data]
+
+    def image(self, environ, start_response):
+        content_type = 'image/gif'
+        data = open('../Spartan.gif', 'rb').read()
+
+        start_response('200 OK', [('Content-type', content_type)])
+        return [data]
             
     def index(self, environ, start_response):
+        name = ''
+        name_key = '*empty*'
+        if 'HTTP_COOKIE' in environ:
+            c = SimpleCookie(environ.get('HTTP_COOKIE', ''))
+            if 'name' in c:
+                key = c.get('name').value
+                name = usernames.get(key, '')
+                name_key = key
+        if name == '':
+            return self.login(environ, start_response)
+
         start_response('200 OK', list(html_headers))
 
         template = env.get_template("index.html")
 
         title = "index"
+        return str(template.render(locals()))
+
+    def login(self, environ, start_response):
+        name = ''
+        name_key = '*empty*'
+        if 'HTTP_COOKIE' in environ:
+            c = SimpleCookie(environ.get('HTTP_COOKIE', ''))
+            if 'name' in c:
+                key = c.get('name').value
+                name = usernames.get(key, '')
+                name_key = key
+        if name:
+            return self.index(environ, start_response)
+        else:
+            start_response('200 OK', list(html_headers))
+            title = 'login'
+            template = env.get_template("login.html")
+            return str(template.render(locals()))
+
+    def login_execute(self, environ, start_response):
+        formdata = environ['QUERY_STRING']
+        results = urlparse.parse_qs(formdata)
+
+        name = results['name'][0]
+        content_type = 'text/html'
+
+        # authentication would go here -- is this a valid username/password,
+        # for example?
+
+        k = str(uuid.uuid4())
+        usernames[k] = name
+
+        headers = list(html_headers)
+        headers.append(('Location', '/index'))
+        headers.append(('Set-Cookie', 'name=%s' % k))
+
+        start_response('302 Found', headers)
+        return ["Redirect to /index..."]
+
+    def logout(self, environ, start_response):
+        if 'HTTP_COOKIE' in environ:
+            c = SimpleCookie(environ.get('HTTP_COOKIE', ''))
+            if 'name' in c:
+                key = c.get('name').value
+                name_key = key
+
+                if key in usernames:
+                    del usernames[key]
+                    print 'DELETING'
+
+        pair = ('Set-Cookie',
+                'name=deleted; Expires=Thu, 01-Jan-1970 00:00:01 GMT;')
+        headers = list(html_headers)
+        headers.append(('Location', '/status'))
+        headers.append(pair)
+
+        start_response('302 Found', headers)
+        return ["Redirect to /status..."]
+
+    def status(self, environ, start_response):
+        start_response('200 OK', list(html_headers))
+
+        name = ''
+        name_key = '*empty*'
+        if 'HTTP_COOKIE' in environ:
+            c = SimpleCookie(environ.get('HTTP_COOKIE', ''))
+            if 'name' in c:
+                key = c.get('name').value
+                name = usernames.get(key, '')
+                name_key = key
+                
+        title = 'login status'
+        template = env.get_template('status.html')
         return str(template.render(locals()))
         
     def recipes(self, environ, start_response):
