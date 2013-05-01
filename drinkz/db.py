@@ -47,6 +47,9 @@ def load_db(filename):
 class LiquorMissing(Exception):
     pass
 
+class DuplicateRecipeName(Exception):
+    pass
+
 def add_bottle_type(mfg, liquor, typ):
     "Add the given bottle type into the drinkz database."
     _bottle_types_db.add((mfg, liquor, typ))
@@ -125,9 +128,6 @@ def add_recipe(r):
         err = "Duplicate recipe; did not add to database."
         raise DuplicateRecipeName(err)
         return 0
-
-class DuplicateRecipeName(Exception):
-    pass
     
 def get_recipe(name):
     "Retrieve the recipe object with name (name)."
