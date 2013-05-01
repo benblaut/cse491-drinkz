@@ -10,37 +10,88 @@ quickly.
 
 import recipes
 import convert
-
-from cPickle import dump, load
+import cPickle
+import sqlite3
 
 # private singleton variables at module level
-_bottle_types_db = set([])
-_inventory_db = dict([])
-_recipe_db = set([])
+_bottle_types_db = set()
+_inventory_db = {}
+_recipe_db = set()
 
 def _reset_db():
     "A method only to be used during testing -- toss the existing db info."
     global _bottle_types_db, _inventory_db, _recipe_db
-    _bottle_types_db = set([])
-    _inventory_db = dict([])
-    _recipe_db = set([])
+    _bottle_types_db = set()
+    _inventory_db = {}
+    _recipe_db = set()
 
 def save_db(filename):
-    fp = open(filename, 'wb')
+    '''fp = open(filename, 'wb')
 
     tosave = (_bottle_types_db, _inventory_db, _recipe_db)
     dump(tosave, fp)
 
-    fp.close()
+    fp.close()'''
+
+    connect = sqlite3.connect(filename)
+
+    cursor = connect.cursor()
+
+    # clear existing tables
+    cursor.execute('''drop table if exists bottle_types''')
+    cursor.execute('''drop table if exists inventory''')
+    cursor.execute('''drop table if exists recipes''')
+
+    # create tables
+    cursor.execute('''CREATE TABLE bottle_types (mfg text, liquor text, typ text)''')
+    cursor.execute('''CREATE TABLE inventory (mfg text, liquor text, amount text)''')    
+    cursor.execute('''CREATE TABLE recipes (recipe text)''')
+
+    for entry in _bottle_types_db:
+        cursor.execute("INSERT INTO bottle_types (mfg, liquor, typ) VALUES (?, ?, ?)", entry)
+
+    for entry in _inventory_db:
+        (m, l) = entry
+        amt = _inventory_db[entry]
+        cursor.execute("INSERT INTO inventory (mfg, liquor, amount) VALUES (?, ?, ?)", (m, l, amt))
+
+    for entry in _recipe_db:
+        serialize = cPickle.dumps(entry)
+
+        cursor.execute("INSERT INTO recipes (recipe) VALUES (?)", [sqlite3.Binary(serialize)])
+
+    #cursor.execute("SELECT * FROM bottle_types")
+    connect.commit()
+    connect.close()
 
 def load_db(filename):
-    global _bottle_types_db, _inventory_db, _recipe_db
+    '''global _bottle_types_db, _inventory_db, _recipe_db
     fp = open(filename, 'rb')
 
     loaded = load(fp)
     (_bottle_types_db, _inventory_db, _recipe_db) = loaded
 
-    fp.close()
+    fp.close()'''
+
+    db = sqlite3.connect(filename)
+
+    cursor = db.cursor()
+
+    cursor.execute("SELECT * FROM bottle_types")
+    results = cursor.fetchall()
+
+    for (mfg, liquor, typ) in results:
+        add_bottle_type(mfg, liquor, typ)
+
+    cursor.execute('SELECT * FROM inventory')
+    results = cursor.fetchall()
+    for (mfg,liquor,amount) in results:
+        add_to_inventory(mfg, liquor, amount + ' ml')
+    
+    for row in cursor.execute("select * from recipes"):
+        add_recipe(cPickle.loads(str(row[0])))
+
+    cursor.close()
 
 # exceptions in Python inherit from Exception and generally don't need to
 # override any methods.

@@ -38,7 +38,7 @@ dispatch = {
 
 html_headers = [('Content-type', 'text/html')]
 
-db.load_db("test_database")
+db.load_db("database.db")
 
 usernames = {}
 
@@ -239,6 +239,21 @@ class SimpleApp(object):
         
         template = env.get_template("liquor_types.html")
         return str(template.render(locals()))
+
+    def liquor_types_add(self, environ, start_response):
+        formdata = environ['QUERY_STRING']
+        results = urlparse.parse_qs(formdata)
+
+        mfg = results['mfg'][0]
+        liquor = results['liquor'][0]
+        typ = results['typ'][0]
+        db.add_bottle_type(mfg, liquor, typ)
+        
+        headers = list(html_headers)
+        headers.append(('Location', '/liquor_types'))
+
+        start_response('302 Found', headers)
+        return ["Redirect to /liquor_types..."]
         
     def convert_form(self, environ, start_response):
         start_response("200 OK", list(html_headers))

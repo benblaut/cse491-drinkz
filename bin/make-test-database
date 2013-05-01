@@ -4,35 +4,38 @@ import _mypath
 
 from drinkz import db, recipes
 
-db._reset_db()
+def main(args):
+    try:
+        filename = args[1]
+    except Exception:
+        filename = "database.db"
 
-db.add_bottle_type('Kraken', 'dark spiced rum', 'dark spiced rum')
-db.add_to_inventory('Kraken', 'dark spiced rum', '750 ml')
+    db._reset_db()
 
-db.add_bottle_type('Bols', 'blue curacao', 'citrus liqeur')
-db.add_to_inventory('Bols', 'blue curacao', '500 ml')
+    db.add_bottle_type('Kraken', 'dark spiced rum', 'dark spiced rum')
+    db.add_to_inventory('Kraken', 'dark spiced rum', '750 ml')
+
+    db.add_bottle_type('Bols', 'blue curacao', 'citrus liqeur')
+    db.add_to_inventory('Bols', 'blue curacao', '500 ml')
         
-db.add_bottle_type('Hypnotiq', 'original', 'berry liqeur')
-db.add_to_inventory('Hypnotiq', 'original', '750 ml')
+    db.add_bottle_type('Hypnotiq', 'original', 'berry liqeur')
+    db.add_to_inventory('Hypnotiq', 'original', '750 ml')
 
-db.add_bottle_type('Uncle John\'s', 'original cider', 'apple cider')
-db.add_to_inventory('Uncle John\'s', 'original cider', '1 g')
+    db.add_bottle_type('Uncle John\'s', 'original cider', 'apple cider')
+    db.add_to_inventory('Uncle John\'s', 'original cider', '1 g')
 
-kraken_destroyer = recipes.Recipe('kraken destroyer', [('dark spiced rum',
+    kraken_destroyer = recipes.Recipe('kraken destroyer', [('dark spiced rum',
                                                    '4.5 oz'), ('citrus liqeur', 
                                                    '1 oz'), ('berry liqeur', 
                                                    '1 oz'), ('apple cider', 
                                                    '8 oz')])
-db.add_recipe(kraken_destroyer)
+    db.add_recipe(kraken_destroyer)
 
-kraken_and_cola = recipes.Recipe('kraken and cola', [('dark spiced rum', '6 oz'),
+    kraken_and_cola = recipes.Recipe('kraken and cola', [('dark spiced rum', '6 oz'),
                                             ('cola', '8 oz')])
-db.add_recipe(kraken_and_cola)
-
-def main(args):
-   filename = "test_database" #args[1]
+    db.add_recipe(kraken_and_cola)
     
-   db.save_db(filename)
+    db.save_db(filename)
 
 if __name__ == '__main__':
    main(sys.argv)
