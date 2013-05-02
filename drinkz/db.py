@@ -12,6 +12,7 @@ import recipes
 import convert
 import cPickle
 import sqlite3
+import os.path
 
 # private singleton variables at module level
 _bottle_types_db = set()
@@ -73,25 +74,32 @@ def load_db(filename):
 
     fp.close()'''
 
-    db = sqlite3.connect(filename)
+    if not os.path.isfile(filename):   
+        db = sqlite3.connect(filename)
+        cursor = db.cursor() 
+        print "sasd"# create tables
+        cursor.execute('''CREATE TABLE bottle_types (mfg text, liquor text, typ text)''')
+        cursor.execute('''CREATE TABLE inventory (mfg text, liquor text, amount text)''')    
+        cursor.execute('''CREATE TABLE recipes (recipe text)''')
+        cursor.close()
+    else:
+        db = sqlite3.connect(filename)
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM bottle_types")
+        results = cursor.fetchall()
 
-    cursor = db.cursor()
+        for (mfg, liquor, typ) in results:
+            add_bottle_type(mfg, liquor, typ)
 
-    cursor.execute("SELECT * FROM bottle_types")
-    results = cursor.fetchall()
-
-    for (mfg, liquor, typ) in results:
-        add_bottle_type(mfg, liquor, typ)
-
-    cursor.execute('SELECT * FROM inventory')
-    results = cursor.fetchall()
-    for (mfg,liquor,amount) in results:
-        add_to_inventory(mfg, liquor, amount + ' ml')
+        cursor.execute('SELECT * FROM inventory')
+        results = cursor.fetchall()
+        for (mfg,liquor,amount) in results:
+            add_to_inventory(mfg, liquor, amount + ' ml')
     
-    for row in cursor.execute("select * from recipes"):
-        add_recipe(cPickle.loads(str(row[0])))
+        for row in cursor.execute("select * from recipes"):
+            add_recipe(cPickle.loads(str(row[0])))
 
-    cursor.close()
+        cursor.close()
 
 # exceptions in Python inherit from Exception and generally don't need to
 # override any methods.
