@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Drinkz Index</h1>
+<a href='recipes'>Recipes</a>
+<p>
+<a href='liquor_types'>Liquor types</a>
+<p>
+<a href='inventory'>Inventory</a>
+<p>
+<hr>
+<a href='convert_form'>Convert</a>
+<hr>
+<p>
+<a href='status'>Status</a>
+<p>
+<a href='logout'>Log out</a>
+<p>
+
+<script>
+function myFunction()
+{
+alert("No I'm not!");
+}
+</script>
+<input type="button" onclick="myFunction()" value="You're drunk." />
+
+{% endblock %}

@@ -198,6 +198,7 @@ class SimpleApp(object):
 
         r = recipes.Recipe(name, ingredients)
         db.add_recipe(r)
+        db.save_db("database.db")
         
         headers = list(html_headers)
         headers.append(('Location', '/recipes'))
@@ -223,6 +224,7 @@ class SimpleApp(object):
         liquor = results['liquor'][0]
         amount = results['amount'][0]
         db.add_to_inventory(mfg, liquor, amount)
+        db.save_db("database.db")
         
         headers = list(html_headers)
         headers.append(('Location', '/inventory'))
@@ -248,6 +250,7 @@ class SimpleApp(object):
         liquor = results['liquor'][0]
         typ = results['typ'][0]
         db.add_bottle_type(mfg, liquor, typ)
+        db.save_db("database.db")
         
         headers = list(html_headers)
         headers.append(('Location', '/liquor_types'))
@@ -257,7 +260,6 @@ class SimpleApp(object):
         
     def convert_form(self, environ, start_response):
         start_response("200 OK", list(html_headers))
-
         title = "convert form"
         template = env.get_template("convert_form.html")
         return str(template.render(locals()))

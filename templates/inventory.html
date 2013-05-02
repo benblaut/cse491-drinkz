@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if inventory %}
+<h1>Inventory</h1>
+
+ <ul>
+ {% for (mfg, liquor, amount) in inventory %}
+   <li> {{ mfg }} - {{ liquor }} - {{ amount }} ml
+ {% endfor %}
+ </ul>
+{% else %}
+No inventory
+{% endif %}
+
+<hr>
+
+<h1>Add to inventory:</h1>
+<form action="inventory_add">
+Mfg: <input type="text" name="mfg"><p>
+Liquor: <input type="text" name="liquor"><p>
+Amount: <input type="text" name="amount">
+<input type="submit">
+</form>
+
+{% endblock content %}

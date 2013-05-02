@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+<script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+</head>
+<body>
+<h1>Conversion form</h1>
+Enter amount to convert to milliliters in liters or gallons: <input type=text class='b' value=''>
+<p class='toupdate' />
+<!--<input type=submit>-->
+
+<script type="text/javascript">
+
+function update_result(a, c) {
+   text = '<font color="red"><b>' + a + ' equals ' + c + ' ml'+'</font></b>';
+   $('p.toupdate').html(text);
+}
+
+function do_convert() {
+ b = $('input.b').val();
+ $.ajax({
+     url: '/rpc', 
+     data: JSON.stringify ({method:'convert_units_to_ml', params:[b,], id:"0"} ),
+     type: "POST",
+     dataType: "json",
+     success: function (data) { update_result(b,data.result) },
+     error: function (err)  { alert ("Error");}
+  });
+}
+$('input.b').change(do_convert);
+</script>
+</body>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if liquor_types %}
+<h1>Liquor Types</h1>
+
+ <ul>
+ {% for (mfg, liquor, typ) in liquor_types %}
+   <li> {{ mfg }} - {{ liquor }} - {{ typ }}
+ {% endfor %}
+ </ul>
+{% else %}
+No liquor types...
+{% endif %}
+
+<h1>Add to liquor types:</h1>
+<form action="liquor_types_add">
+Mfg: <input type="text" name="mfg"><p>
+Liquor: <input type="text" name="liquor"><p>
+Type: <input type="text" name="typ">
+<input type="submit">
+</form>
+
+{% endblock content %}
