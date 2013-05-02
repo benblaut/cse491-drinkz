@@ -18,6 +18,7 @@ import os.path
 _bottle_types_db = set()
 _inventory_db = {}
 _recipe_db = set()
+_song_db = {}
 
 def _reset_db():
     "A method only to be used during testing -- toss the existing db info."
@@ -25,6 +26,7 @@ def _reset_db():
     _bottle_types_db = set()
     _inventory_db = {}
     _recipe_db = set()
+    _song_db = {}
 
 def save_db(filename):
     '''fp = open(filename, 'wb')
@@ -42,11 +44,13 @@ def save_db(filename):
     cursor.execute('''drop table if exists bottle_types''')
     cursor.execute('''drop table if exists inventory''')
     cursor.execute('''drop table if exists recipes''')
+    cursor.execute('''drop table if exists songs''')
 
     # create tables
     cursor.execute('''CREATE TABLE bottle_types (mfg text, liquor text, typ text)''')
     cursor.execute('''CREATE TABLE inventory (mfg text, liquor text, amount text)''')    
     cursor.execute('''CREATE TABLE recipes (recipe text)''')
+    cursor.execute('''CREATE TABLE songs (artist text, songs text)''')
 
     for entry in _bottle_types_db:
         cursor.execute("INSERT INTO bottle_types (mfg, liquor, typ) VALUES (?, ?, ?)", entry)
@@ -60,6 +64,9 @@ def save_db(filename):
         serialize = cPickle.dumps(entry)
 
         cursor.execute("INSERT INTO recipes (recipe) VALUES (?)", [sqlite3.Binary(serialize)])
+
+    for entry in _song_db:
+        cursor.execute("INSERT INTO songs (artist, songs) VALUES (?,?)",(entry, _song_db[entry]))    
 
     #cursor.execute("SELECT * FROM bottle_types")
     connect.commit()
@@ -77,10 +84,11 @@ def load_db(filename):
     if not os.path.isfile(filename):   
         db = sqlite3.connect(filename)
         cursor = db.cursor() 
-        print "sasd"# create tables
+        # create tables
         cursor.execute('''CREATE TABLE bottle_types (mfg text, liquor text, typ text)''')
         cursor.execute('''CREATE TABLE inventory (mfg text, liquor text, amount text)''')    
         cursor.execute('''CREATE TABLE recipes (recipe text)''')
+        cursor.execute('''CREATE TABLE songs (artist text, songs text)''')
         cursor.close()
     else:
         db = sqlite3.connect(filename)
@@ -93,11 +101,18 @@ def load_db(filename):
 
         cursor.execute('SELECT * FROM inventory')
         results = cursor.fetchall()
-        for (mfg,liquor,amount) in results:
+        for (mfg, liquor, amount) in results:
             add_to_inventory(mfg, liquor, amount + ' ml')
     
         for row in cursor.execute("select * from recipes"):
             add_recipe(cPickle.loads(str(row[0])))
+
+        cursor.execute('SELECT * FROM songs')
+        results = cursor.fetchall()
+        for (artist, songs) in results:
+            playlist = songs.split(',')
+            for song in playlist:
+                add_song(artist, song)
 
         cursor.close()
 
@@ -215,3 +230,13 @@ def get_mixable_recipes():
             mixable_recs.append(rec)
             
     return mixable_recs
+
+def add_song(artist, song):
+    if artist in _song_db:
+        _song_db[artist] += (',' + song)
+        print _song_db
+    else:
+        _song_db[artist] = song
+
+def get_playlist():
+    return _song_db

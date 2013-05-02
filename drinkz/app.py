@@ -31,6 +31,8 @@ dispatch = {
     '/inventory_add' : 'inventory_add',
     '/liquor_types' : 'liquor_types',
     '/liquor_types_add' : 'liquor_types_add',
+    '/songs' : 'songs',
+    '/songs_add' : 'songs_add',
     '/convert_form' : 'convert_form',
     '/do_convert' : 'do_convert',
     '/rpc'  : 'dispatch_rpc'
@@ -257,24 +259,42 @@ class SimpleApp(object):
 
         start_response('302 Found', headers)
         return ["Redirect to /liquor_types..."]
+
+    def songs(self, environ, start_response):
+        start_response("200 OK", list(html_headers))
+
+        title = "songs"
+
+	songs = []
+        for artist in sorted(db.get_playlist().iterkeys()):
+            playList = db.get_playlist()[artist];
+            songList = playList.split(',');
+            for song in songList:
+                songs.append(artist + " - " + song)
+
+        template = env.get_template("songs.html")
+        return str(template.render(locals()))
+
+    def songs_add(self, environ, start_response):
+        formdata = environ['QUERY_STRING']
+        results = urlparse.parse_qs(formdata)
+
+        artist = results['artist'][0]
+        song = results['song'][0]
+        db.add_song(artist,song) 
+        db.save_db("database.db")      
+
+        headers = list(html_headers)
+        headers.append(('Location', '/songs'))
+
+        start_response('302 Found', headers)
+        return ["Redirect to /songs.."]
         
     def convert_form(self, environ, start_response):
         start_response("200 OK", list(html_headers))
         title = "convert form"
         template = env.get_template("convert_form.html")
         return str(template.render(locals()))
-
-    def do_convert(self, environ, start_response):
-        start_response("200 OK", list(html_headers))
-
-        formdata = environ['QUERY_STRING']
-        results = urlparse.parse_qs(formdata)
-        
-        amount = results['amount'][0]
-        amount = convert.convert_to_ml(amount)
-
-        x = ["Amount is: %s ml" % (amount,)]
-        return x
 
     def dispatch_rpc(self, environ, start_response):
         # POST requests deliver input data via a file-like handle,
@@ -344,6 +364,15 @@ class SimpleApp(object):
 
     def rpc_add_to_inventory(self, mfg, liquor, amount):
         db.add_to_inventory(mfg, liquor, amount)
+
+    def rpc_add_to_playlist(self,artist,song):
+        added = False
+        try:
+            db.add_to_playlist(artist, song)
+            added = True;
+        except Exception:
+            added = False
+        return added
 
 if __name__ == '__main__':
     import random, socket

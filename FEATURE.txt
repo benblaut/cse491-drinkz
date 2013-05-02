@@ -1,0 +1,11 @@
+Summary:
+	Add functionality to view and add songs to a playlist.
+
+Features:
+	Store songs with artist and name components.
+	RPC access.
+
+Functionality:
+	A song will be stored in a dictionary of playlist[artist] = song.
+	Add individually.
+	Retrieve song by artist or name (dictionary).

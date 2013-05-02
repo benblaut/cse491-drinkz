@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if songs %}
+<h1>Song List</h1>
+
+ <ul>
+ {% for entry in songs %}
+   <li> {{ entry }}
+ {% endfor %}
+ </ul>
+{% else %}
+No songs...
+{% endif %}
+
+<h1>Add song:</h1>
+<form action="songs_add">
+Artist: <input type="text" name="artist"><p>
+Song: <input type="text" name="song"><p>
+<input type="submit">
+</form>
+
+{% endblock content %}
