@@ -1,27 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-
-{% if recipes %}
 <h1>Recipes</h1>
-
+{% if recipe_list %}
  <table>
    <td><b><u>Recipe</u><b/></td>
-   <td><b><u>Have ingredients?</u></b></td>
    <tr><td>
- {% for r in recipes %}
-   <tr><td> {{ r.name }} </td><td> 
-   {% if r.is_mixable %}
-     Yes.
-   {% else %}
-     No.
-   {% endif %}
+ {% for r in recipe_list %}
+   <tr><td> {{ r.name }} </td></tr>
  {% endfor %}
- </td></tr>
+ </table>
 {% else %}
 No recipes...
 {% endif %}
 
-Add to liquor types:
+<br>
+
+<h1>Mixable Recipes</h1>
+{% if mixable_recipes %}
+  <table>
+    <td><b><u>Recipe</u><b/></td>
+   <tr><td>
+ {% for m in mixable_recipes %}
+   <tr><td> {{ m.name }} </td></tr>
+ {% endfor %}
+ </table>
+{% else %}
+No mixable recipes...
+{% endif %}
+
+<br><br>
+
+<h1>Add a recipe:</h1>
 <form action="recipes_add">
 Recipe name: <input type="text" name="name"><p>
 Ingredients: (type, amount) on each line --

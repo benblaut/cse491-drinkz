@@ -30,7 +30,7 @@ class Recipe(object):
     def is_mixable(self):
         "Check if current recipe can be mixed with given inventory."
         mixable = False
-        
+
         if not self.need_ingredients():
             mixable = True
             

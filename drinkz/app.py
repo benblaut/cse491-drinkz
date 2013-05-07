@@ -181,7 +181,8 @@ class SimpleApp(object):
         start_response('200 OK', list(html_headers))
 
         title = "recipes"
-        recipes = [r for r in db.get_all_recipes()]
+        recipe_list = [r for r in db.get_all_recipes()]
+        mixable_recipes = [m for m in db.get_mixable_recipes()]
 
         template = env.get_template("recipes.html")
         return str(template.render(locals()))

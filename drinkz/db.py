@@ -224,7 +224,7 @@ def get_mixable_recipes():
     "Given an inventory and list of recipes, find out which recipes can be made."
     rec_list = get_all_recipes()
     mixable_recs = []
-    
+
     for rec in rec_list:
         if rec.is_mixable():
             mixable_recs.append(rec)
